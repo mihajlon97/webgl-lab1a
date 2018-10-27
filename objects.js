@@ -1,4 +1,8 @@
+// Pyramid object
+// Expected parameter, gl instance and object position
 function Pyramid(gl, position = [0, 0.6, -2]) {
+
+		// Shader program
     if (Pyramid.shaderProgram === undefined) {
         Pyramid.shaderProgram = initShaderProgram(gl, "vertex-shader", "fragment-shader");
         if (Pyramid.shaderProgram === null) {
@@ -18,6 +22,8 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
         gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
         gl.enableVertexAttribArray(Pyramid.locations.attribute.vertColor);
     }
+
+		// Buffers
     if (Pyramid.buffers === undefined) {
         // Create a buffer with the vertex positions
         // 3 coordinates per vertex, 3 vertices per triangle
@@ -86,19 +92,17 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
         };
     }
 
+		// Object Variables
     this.position = position;
 		this.scale = [0.3, 0.3, 0.3];
-		let nr1 = Math.random();
-		let nr2 = Math.random();
-		let nr3 = Math.random();
-
-    this.rotationX = (nr1 == 0.5) ? 1 : 0;
-		this.rotationY = (nr2 == 0.5) ? 1 : 0;
-		this.rotationZ = (nr3 == 0.5) ? 1 : 0;
+    this.rotationX = 0;
+		this.rotationY = 0;
+		this.rotationZ = 0;
     this.mMatrix = mat4.create();
     this.mMatrixTInv = mat3.create();
 		this.selected = true;
 
+		// Object draw function
     this.draw = function(gl, pMatrix) {
 
         gl.useProgram(Pyramid.shaderProgram);
@@ -120,31 +124,38 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
 				this.update(0.00, 0.00, 0.00);
     };
 
+		// Object update functon
+		// Expected parameters, x,y and z axis rotators, position vector and scale vector
     this.update = function(x, y, z, position = this.position, scale = this.scale) {
+
+				// Sum for rotation
 				this.rotationX += x;
 				this.rotationY += y;
 				this.rotationZ += z;
 
+				// Sum postion vector with existing position if different
 				if (!arraysEqual(position, this.position)) {
 					this.position = this.position.map(function (num, idx) {
 					  return num + position[idx];
 					});
 				}
 
+				// Sum scale vector with existing scale if different
 				if (!arraysEqual(scale, this.scale)) {
 					this.scale = this.scale.map(function (num, idx) {
 					  return num * scale[idx];
 					});
 				}
 
-        // set the current modelwa matrix
+				// Apply transformations in order Translate, Rotate, Scale
         mat4.identity(this.mMatrix);
         mat4.translate(this.mMatrix, this.mMatrix, this.position);
         mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
         mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
 				mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
 				mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        // compute the inverse transpose of the 3x3 submatrix of the model matrix
+
+        // Compute the inverse transpose of the 3x3 submatrix of the model matrix
         mat3.normalFromMat4(this.mMatrixTInv, this.mMatrix);
     };
 }

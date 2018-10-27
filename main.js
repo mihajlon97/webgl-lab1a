@@ -1,18 +1,7 @@
-	// Global Variables
+	// Global Variables, first object empty, because selection starts with 1
 	var objects=[{}], canvas, gl, program;
 
-	// Attributes and Uniform Locations
-	var positionLocation;
-	var colorLocation;
-	var mMatrixLocation;
-	var projMatrixLocation;
-
-	// Matrices
-	var translationMatrix = mat4.create();
-	var rotationMatrix = mat4.create();
-	var scaleMatrix = mat4.create();
-	var identityMatrix = mat4.create();
-
+	// Init function called onload body event
 	var Init = function() {
 		canvas = document.getElementById('webgl-canvas');
 		gl = canvas.getContext('webgl');
@@ -24,17 +13,19 @@
         return;
     }
 
-    // set a background color
+    // Set a background color
     gl.clearColor(0.5, 0.5, 0.5, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
+		// Create projection matrix
 		let pMatrix = mat4.create();
     const asp = canvas.width/canvas.height;
     const bottom = -1;
     const zNear = 0.1;
     const zFar = 100.0;
-
 		mat4.perspective(pMatrix, 45, asp, zNear, zFar, pMatrix);
+
+		// Create 9 objects
     try {
 				objects.push(new Pyramid(gl, [-0.7, 0.6, -2]));
         objects.push(new Pyramid(gl));
@@ -49,23 +40,27 @@
 			console.log(E);
 		}
 
+		// Render all objects
     function render() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				objects.forEach((e, i) => { if (i != 0) { e.draw(gl, pMatrix); } })
         requestAnimationFrame(render);
     }
-
     // Start rendering
     requestAnimationFrame(render);
 
+		// Handle user input events
 		document.addEventListener("keydown", function(event) {
-
+			// Selecting object, one or all if 0 is pressed
 			if(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(event.key)) {
 				objects['selected'] = [];
 				objects.forEach((e, i) => { if (event.key == '0' || i == event.key) { if (i != 0) objects['selected'].push(e); } });
 			}
 
+			// If no object selected, exit
 			if (objects['selected'] === null || objects['selected'] === undefined || objects['selected'].lenght == 0) return;
+
+			// Handle event.key inputs
 			switch (event.key) {
 				case "w" : {
 						objects['selected'].map(e => e.update(0.1, 0.00, 0.00));
@@ -141,6 +136,4 @@
 				}
 			}
 		});
-
-
 	}
