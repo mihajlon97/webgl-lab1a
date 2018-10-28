@@ -41,9 +41,10 @@
 		}
 
 		// Render all objects
+		// Apply Lines if selected
     function render() {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-				objects.forEach((e, i) => { if (i != 0) { e.draw(gl, pMatrix); } })
+				objects.forEach((e, i) => { if (i != 0) { e.draw(gl, pMatrix); if (e.selected) e.drawLines(gl, pMatrix); } })
         requestAnimationFrame(render);
     }
     // Start rendering
@@ -54,7 +55,15 @@
 			// Selecting object, one or all if 0 is pressed
 			if(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(event.key)) {
 				objects['selected'] = [];
-				objects.forEach((e, i) => { if (event.key == '0' || i == event.key) { if (i != 0) objects['selected'].push(e); } });
+				objects.forEach((e, i) => {
+					e.selected = false;
+					if (event.key == '0' || i == event.key) {
+							if (i != 0) {
+									objects['selected'].push(e);
+									e.selected = true;
+							}
+			 		}
+				});
 			}
 
 			// If no object selected, exit
@@ -70,11 +79,11 @@
 					objects['selected'].map(e => e.update(-0.1, 0.00, 0.00));
 					break;
 			  }
-				case "q" : {
+				case "e" : {
 					objects['selected'].map(e => e.update(0.00, -0.1, 0.00));
 					break;
 				}
-				case "e" : {
+				case "q" : {
 					objects['selected'].map(e => e.update(0.00, 0.1, 0.00));
 					break;
 				}

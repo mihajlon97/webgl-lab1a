@@ -84,9 +84,64 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
 										];
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
+
+				// Lines
+				const lBuffer = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, lBuffer);
+
+				let lineVertices = [
+					// y-axis
+					0.0,  1.1, 0.0,
+					0.0, -1.1, 0.0,
+					// x-axis
+					1.1, 0.0,  0.0,
+				   -1.1, 0.0,  0.0,
+					// z-axis
+					0.0, 0.0,  1.1,
+					0.0, 0.0, -1.1
+				];
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineVertices), gl.STATIC_DRAW);
+				lBuffer.itemSize = 3;
+				lBuffer.numItems = 6;
+
+
+				const liBuffer = gl.createBuffer();
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, liBuffer);
+
+				var lineIndices = [
+					0,1,
+					2,3,
+					4,5
+				];
+				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(lineIndices), gl.STATIC_DRAW);
+				liBuffer.itemSize = 1;
+				liBuffer.numItems = 6;
+
+				const lcBuffer =  gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, lcBuffer);
+
+				var lineColors = [
+					0.0, 1.0, 0.0, 1.0,
+					0.0, 1.0, 0.0, 1.0,
+
+					1.0, 0.0, 0.0, 1.0,
+					1.0, 0.0, 0.0, 1.0,
+
+					0.0, 0.0, 1.0, 1.0,
+					0.0, 0.0, 1.0, 1.0
+				];
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineColors), gl.STATIC_DRAW);
+				lcBuffer.itemSize = 4;
+				lcBuffer.numItems = 6;
+
+
+
         Pyramid.buffers = {
             pBuffer: pBuffer,
             cBuffer: cBuffer,
+						lBuffer: lBuffer,
+						liBuffer: liBuffer,
+						lcBuffer: lcBuffer,
             pComponents: 3, // number of components per vertex in pBuffer
             cComponents: 3, // number of components per color in cBuffer
         };
@@ -100,7 +155,7 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
 		this.rotationZ = 0;
     this.mMatrix = mat4.create();
     this.mMatrixTInv = mat3.create();
-		this.selected = true;
+		this.selected = false;
 
 		// Object draw function
     this.draw = function(gl, pMatrix) {
@@ -123,6 +178,28 @@ function Pyramid(gl, position = [0, 0.6, -2]) {
         gl.drawArrays(gl.TRIANGLES, 0, 18);
 				this.update(0.00, 0.00, 0.00);
     };
+
+
+
+		// Object draw function
+    this.drawLines = function(gl, pMatrix) {
+
+        gl.useProgram(Pyramid.shaderProgram);
+
+			 	gl.bindBuffer(gl.ARRAY_BUFFER,  Pyramid.buffers.lBuffer);
+			 	gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.lBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+	      gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lcBuffer);
+	      gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Pyramid.buffers.liBuffer);
+				gl.uniformMatrix4fv(Pyramid.locations.uniform.projMatrix, false, pMatrix);
+			 	gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
+
+				gl.drawElements(gl.LINES, Pyramid.buffers.liBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    };
+
+
 
 		// Object update functon
 		// Expected parameters, x,y and z axis rotators, position vector and scale vector
