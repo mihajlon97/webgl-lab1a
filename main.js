@@ -127,7 +127,7 @@
 					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 0.9, 1]));
 					break;
 				}
-				case "c" : {
+				case "z" : {
 					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1, 0.9]));
 					break;
 				}
@@ -139,8 +139,8 @@
 					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1.1, 1]));
 					break;
 				}
-				case "C" : {
-					objects['selected'].map(e => e.update5(0.00, 0.00, 0.00, [0, 0, 0], [1, 1, 1.1]));
+				case "Z" : {
+					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1, 1.1]));
 					break;
 				}
 			}
