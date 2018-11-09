@@ -1,5 +1,5 @@
 	// Global Variables, first object empty, because selection starts with 1
-	var objects=[{}], canvas, gl, program;
+	var objects=[{}], canvas, gl, program, flag = false;
 
 	// Init function called onload body event
 	var Init = function() {
@@ -9,46 +9,61 @@
 		gl.viewportHeight = canvas.height;
 
 		if (!gl) {
-        alert('Please use new browser!');
-        return;
-    }
+			alert('Please use new browser!');
+			return;
+		}
 
-    // Set a background color
-    gl.clearColor(0.5, 0.5, 0.5, 1.0);
-    gl.enable(gl.DEPTH_TEST);
+		// Set a background color
+		gl.clearColor(0.5, 0.5, 0.5, 1.0);
+		gl.enable(gl.DEPTH_TEST);
 
 		// Create projection matrix
 		let pMatrix = mat4.create();
-    const asp = canvas.width/canvas.height;
-    const bottom = -1;
-    const zNear = 0.1;
-    const zFar = 100.0;
-		mat4.perspective(pMatrix, 45, asp, zNear, zFar, pMatrix);
+		// World matrix
+        var wMatrix = mat4.create();
+        mat4.identity(wMatrix);
+
+        var vMatrix = mat4.create();
+        mat4.lookAt(vMatrix, vec3.fromValues(0, 0, -8), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
+        mat4.perspective(pMatrix, glMatrix.toRadian(45), canvas.width / canvas.height, 0.4, 2000.0);
 
 		// Create 9 objects
-    try {
-				objects.push(new Pyramid(gl, [-0.7, 0.6, -2]));
-        objects.push(new Pyramid(gl));
-				objects.push(new Pyramid(gl, [0.7, 0.6, -2]));
-				objects.push(new Pyramid(gl, [-0.7, -0.1, -2]));
-				objects.push(new Pyramid(gl, [0, -0.1, -2]));
-				objects.push(new Pyramid(gl, [0.7, -0.1, -2]));
-				objects.push(new Pyramid(gl, [-0.7, -0.8, -2]));
-				objects.push(new Pyramid(gl, [0, -0.8, -2]));
-				objects.push(new Pyramid(gl, [0.7, -0.8, -2]));
-    } catch (E) {
+		try {
+			objects.push(new Pyramid(gl, [-0.7, 0.6, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0, 0.6, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0.7, 0.6, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [-0.7, -0.1, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0, -0.1, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0.7, -0.1, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [-0.7, -0.8, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0, -0.8, -3], pMatrix, wMatrix));
+			objects.push(new Pyramid(gl, [0.7, -0.8, -3], pMatrix, wMatrix));
+		} catch (E) {
 			console.log(E);
 		}
 
 		// Render all objects
 		// Apply Lines if selected
-    function render() {
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-				objects.forEach((e, i) => { if (i != 0) { e.draw(gl, pMatrix); if (e.selected) e.drawLines(gl, pMatrix); } })
-        requestAnimationFrame(render);
-    }
-    // Start rendering
-    requestAnimationFrame(render);
+		var flag = false;
+		function render() {
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			objects.forEach((e, i) => {
+				if (i != 0) {
+					e.draw(gl);
+					if (!flag) {
+						e.start();
+						if (i == objects.length - 1) flag = true;
+					}
+					if (e.selected) e.drawLines(gl);
+				}
+			})
+			requestAnimationFrame(render);
+		}
+		// Start rendering
+		requestAnimationFrame(render);
+
+
+
 
 		// Handle user input events
 		document.addEventListener("keydown", function(event) {
@@ -59,10 +74,11 @@
 					e.selected = false;
 					if (event.key == '0' || i == event.key) {
 							if (i != 0) {
-									objects['selected'].push(e);
-									e.selected = true;
+								objects['selected'].push(e);
+								e.global = (event.key == '0');
+								e.selected = true;
 							}
-			 		}
+					}
 				});
 			}
 
@@ -72,75 +88,75 @@
 			// Handle event.key inputs
 			switch (event.key) {
 				case "w" : {
-						objects['selected'].map(e => e.update(0.1, 0.00, 0.00));
-						break;
+					objects['selected'].map(e => e.rotateX(0.1));
+					break;
 				}
 				case "s" : {
-					objects['selected'].map(e => e.update(-0.1, 0.00, 0.00));
+                    objects['selected'].map(e => e.rotateX(-0.1));
 					break;
 			  }
 				case "e" : {
-					objects['selected'].map(e => e.update(0.00, -0.1, 0.00));
+                    objects['selected'].map(e => e.rotateY(0.1));
 					break;
 				}
 				case "q" : {
-					objects['selected'].map(e => e.update(0.00, 0.1, 0.00));
+                    objects['selected'].map(e => e.rotateY(-0.1));
 					break;
 				}
 				case "d" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.1));
+                    objects['selected'].map(e => e.rotateZ(0.1));
 					break;
 				}
 				case "a" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, -0.1));
+                    objects['selected'].map(e => e.rotateZ(-0.1));
 					break;
 				}
 				case "ArrowDown" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, -0.03, 0]));
+					objects['selected'].map(e => e.translate([0, -0.03, 0]));
 					break;
 				}
 				case "ArrowUp" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0.03, 0]));
+                    objects['selected'].map(e => e.translate([0, 0.03, 0]));
 					break;
 				}
 				case "ArrowLeft" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [-0.03, 0, 0]));
+                    objects['selected'].map(e => e.translate([-0.03, 0, 0]));
 					break;
 				}
 				case "ArrowRight" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0.03, 0, 0]));
+                    objects['selected'].map(e => e.translate([0.03, 0, 0]));
 					break;
 				}
 				case "," : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0.01]));
+                    objects['selected'].map(e => e.translate([0, 0, 0.01]));
 					break;
 				}
 				case "." : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, -0.01]));
+                    objects['selected'].map(e => e.translate([0, 0, -0.01]));
 					break;
 				}
 				case "x" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [0.9, 1, 1]));
+                    objects['selected'].map(e => e.scaleM([0.9, 1, 1]));
 					break;
 				}
 				case "y" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 0.9, 1]));
+                    objects['selected'].map(e => e.scaleM([1, 0.9, 1]));
 					break;
 				}
 				case "z" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1, 0.9]));
+                    objects['selected'].map(e => e.scaleM([1, 1, 0.9]));
 					break;
 				}
 				case "X" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1.1, 1, 1]));
+                    objects['selected'].map(e => e.scaleM([1.1, 1, 1]));
 					break;
 				}
 				case "Y" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1.1, 1]));
+                    objects['selected'].map(e => e.scaleM([1, 1.1, 1]));
 					break;
 				}
 				case "Z" : {
-					objects['selected'].map(e => e.update(0.00, 0.00, 0.00, [0, 0, 0], [1, 1, 1.1]));
+                    objects['selected'].map(e => e.scaleM([1, 1, 1.1]));
 					break;
 				}
 			}

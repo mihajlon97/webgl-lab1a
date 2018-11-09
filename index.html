@@ -6,14 +6,16 @@
 			attribute vec3 vertPosition;
 			attribute vec3 vertColor;
 
-			uniform mat4 projMatrix;
+			uniform mat4 pMatrix;
+			uniform mat4 vMatrix;
+			uniform mat4 wMatrix;
 			uniform mat4 mMatrix;
 			uniform mat3 mMatrixInv;
 
 			varying mediump vec3 fragColor;
 
 			void main() {
-				gl_Position = projMatrix * mMatrix * vec4(vertPosition, 1.0);
+				gl_Position = pMatrix * mMatrix * wMatrix * vec4(vertPosition, 1.0);
 				fragColor = vertColor;
 			}
 		</script>
