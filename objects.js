@@ -1,6 +1,6 @@
 // Pyramid object
 // Expected parameter, gl instance and object position
-function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
+function Pyramid(gl, position = [0, 0, 0]) {
 
     // Shader program
     if (Pyramid.shaderProgram === undefined) {
@@ -16,6 +16,7 @@ function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
             uniform: {
                 mMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrix"),
                 wMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "wMatrix"),
+                vMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "vMatrix"),
                 mMatrixInv: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrixInv"),
                 pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix")
             }
@@ -147,24 +148,25 @@ function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
     }
 
     // Object Variables
-    this.position = position;
-    this.scale = [0.3, 0.3, 0.3];
+    this.lcPosition = position;
+    this.scale = [1, 1, 1];
     this.rotationX = 0;
     this.rotationY = 0;
     this.rotationZ = 0;
-    this.pMatrix = pMatrix;
-    this.wMatrix = wMatrix;
+
     this.mMatrix = mat4.create();
+    this.lcMatrix = mat4.create();
     this.mMatrixTInv = mat3.create();
     this.selected = false;
     this.global = false;
 
     // Object draw function
-    this.draw = function (gl) {
+    this.draw = function (gl, pMatrix, vMatrix) {
         gl.useProgram(Pyramid.shaderProgram);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, this.pMatrix);
+        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
         gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, this.wMatrix);
+        gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
+        gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
         gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixTInv);
         gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
@@ -179,7 +181,7 @@ function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
 
 
     // Object drawLines function which are displayed as local coordinates in colors R for x, G for y and B for z axis
-    this.drawLines = function (gl) {
+    this.drawLines = function (gl, pMatrix) {
         gl.useProgram(Pyramid.shaderProgram);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lBuffer);
@@ -189,58 +191,75 @@ function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
         gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Pyramid.buffers.liBuffer);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, this.pMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
+        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
+        gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.lcMatrix);
 
         gl.drawElements(gl.LINES, Pyramid.buffers.liBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     };
 
+    this.start = function () {
+        this.position = this.lcPosition
+        mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
+        mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
+    };
 
-    // Object update function
-    // Expected parameters, x,y and z axis rotators, position vector and scale vector
-    this.start = function (x = 0, y = 0, z = 0, position = this.position, scale = this.scale) {
-        // Sum for rotation
+    this.update = function(x,y,z, position = [0,0,0], scale = [1,1,1]) {
         this.rotationX += x;
         this.rotationY += y;
         this.rotationZ += z;
+        console.log('X:', x, 'Y:', y, 'Z:', z);
 
-        // Sum postion vector with existing position if different
-        if (!arraysEqual(position, this.position)) {
-            this.position = this.position.map(function (num, idx) {
-                return num + position[idx];
-            });
+        this.lcPosition = this.lcPosition.map(function (num, idx) {
+            return num + position[idx];
+        });
+
+        this.scale = this.scale.map(function (num, idx) {
+            return num * scale[idx];
+        });
+
+        if (this.global) {
+            console.log('GLOBAL');
+            mat4.identity(this.mMatrix);
+            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
+            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
+            mat4.identity(this.lcMatrix);
+            mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
+
+
+            /*
+            mat4.identity(this.lcMatrix);
+            mat4.rotateX(this.lcMatrix, this.lcMatrix, this.rotationX);
+            mat4.rotateZ(this.lcMatrix, this.lcMatrix, this.rotationZ);
+            mat4.rotateY(this.lcMatrix, this.lcMatrix, this.rotationY);
+            mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
+            mat4.scale(this.lcMatrix, this.lcMatrix, this.scale);
+            this.hehe();
+            */
+        } else {
+            mat4.translate(this.lcMatrix, this.lcMatrix, position);
+            mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
+            mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
+            mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
+            mat4.scale(this.lcMatrix, this.lcMatrix, scale)
+            this.hehe();
         }
-
-        // Sum scale vector with existing scale if different
-        if (!arraysEqual(scale, this.scale)) {
-            this.scale = this.scale.map(function (num, idx) {
-                return num * scale[idx];
-            });
-        }
-
-        // Apply transformations in order Translate, Rotate, Scale
-        mat4.identity(this.mMatrix);
-
-        mat4.translate(this.mMatrix, this.mMatrix, this.position);
-        mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
-        mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-        mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-
-        mat4.scale(this.mMatrix, this.mMatrix, this.scale);
     };
+
+    this.hehe = function(){
+        mat4.identity(this.mMatrix);
+        mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
+    }
 
     this.translate = function (position = this.position) {
         if (this.global){
-            if (!arraysEqual(position, this.position)) {
-                this.position = this.position.map(function (num, idx) {
-                    return num + position[idx];
-                });
-            }
-            // mat4.identity(pMatrix);
-            mat4.translate(pMatrix, pMatrix, position);
-            this.newpos = position;
+            console.log('GLOBAL');
+            mat4.translate(this.lcMatrix, this.lcMatrix, position);
+            this.hehe();
         } else {
-            mat4.translate(this.mMatrix, this.mMatrix, position);
+            mat4.translate(this.lcMatrix, this.lcMatrix, position);
+            this.hehe();
         }
     }
 
@@ -248,30 +267,56 @@ function Pyramid(gl, position = [0, 0.6, -2], pMatrix, wMatrix) {
         mat4.scale(this.mMatrix, this.mMatrix, scale);
     }
 
-    this.rotateX = function (x = this.rotationX) {
-        this.rotationX += x;
+    this.rotateX = function (x) {
+        console.log('ROTATION X');
         if (this.global){
-            mat4.rotateX(pMatrix, pMatrix, x/10);
+            console.log('GLOBAL');
+            this.rotationX += x;
+            mat4.identity(this.mMatrix);
+            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.translate(this.mMatrix, this.mMatrix, this.position);
+            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         } else {
+            console.log('LOCAL');
+            mat4.identity(this.mMatrix);
+            mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
             mat4.rotateX(this.mMatrix, this.mMatrix, x);
         }
     }
 
-    this.rotateY = function (y = this.rotationY) {
-        this.rotationY += y;
+    this.rotateY = function (y) {
         if (this.global){
-            mat4.rotateY(pMatrix, pMatrix, y/10);
+            this.rotationY += y;
+            mat4.identity(this.mMatrix);
+            mat4.translate(this.mMatrix, this.mMatrix, this.position);
+            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         } else {
-            mat4.rotateY(this.mMatrix, this.mMatrix, y);
+            this.rotationY += y;
+            mat4.identity(this.mMatrix);
+            mat4.translate(this.mMatrix, this.mMatrix, this.position);
+            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         }
     }
 
-    this.rotateZ = function (z = this.rotationZ) {
-        this.rotationZ += z;
+    this.rotateZ = function (z) {
         if (this.global){
-            mat4.rotateZ(pMatrix, pMatrix, z/10);
+            this.rotationZ += z;
+            mat4.identity(this.mMatrix);
+            mat4.translate(this.mMatrix, this.mMatrix, this.position);
+            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
+            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         } else {
+            this.rotationZ += z;
             mat4.rotateZ(this.mMatrix, this.mMatrix, z);
+            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         }
     }
 }

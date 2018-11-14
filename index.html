@@ -15,7 +15,7 @@
 			varying mediump vec3 fragColor;
 
 			void main() {
-				gl_Position = pMatrix * mMatrix * wMatrix * vec4(vertPosition, 1.0);
+				gl_Position = pMatrix * vMatrix * mMatrix *  vec4(vertPosition, 1.0);
 				fragColor = vertColor;
 			}
 		</script>
