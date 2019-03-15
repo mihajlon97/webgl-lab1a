@@ -150,8 +150,11 @@ function Pyramid(gl, position = [0, 0, 0]) {
     // Object Variables
     this.lcPosition = position;
     this.scale = [1, 1, 1];
+    this.lrotationX = 0;
     this.rotationX = 0;
+    this.lrotationY = 0;
     this.rotationY = 0;
+    this.lrotationZ = 0;
     this.rotationZ = 0;
 
     this.mMatrix = mat4.create();
@@ -204,10 +207,6 @@ function Pyramid(gl, position = [0, 0, 0]) {
     };
 
     this.update = function(x,y,z, position = [0,0,0], scale = [1,1,1]) {
-        this.rotationX += x;
-        this.rotationY += y;
-        this.rotationZ += z;
-        console.log('X:', x, 'Y:', y, 'Z:', z);
 
         this.lcPosition = this.lcPosition.map(function (num, idx) {
             return num + position[idx];
@@ -216,72 +215,73 @@ function Pyramid(gl, position = [0, 0, 0]) {
         this.scale = this.scale.map(function (num, idx) {
             return num * scale[idx];
         });
+        this.position = this.position.map(function (num, idx) {
+            return num + position[idx];
+        });
 
         if (this.global) {
-            console.log('GLOBAL');
+		        this.rotationX += x;
+		        this.rotationY += y;
+		        this.rotationZ += z;
+		        console.log('GLOBAL: X:', x, 'Y:', y, 'Z:', z);
+
             mat4.identity(this.mMatrix);
-            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+
+	          mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+	          mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
             mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
-            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
-            mat4.identity(this.lcMatrix);
-            mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
+            mat4.translate(this.mMatrix, this.mMatrix, this.position);
 
-
-            /*
             mat4.identity(this.lcMatrix);
-            mat4.rotateX(this.lcMatrix, this.lcMatrix, this.rotationX);
-            mat4.rotateZ(this.lcMatrix, this.lcMatrix, this.rotationZ);
-            mat4.rotateY(this.lcMatrix, this.lcMatrix, this.rotationY);
-            mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
-            mat4.scale(this.lcMatrix, this.lcMatrix, this.scale);
-            this.hehe();
-            */
+	          mat4.translate(this.mMatrix, this.mMatrix, [0, 0, 0]);
+	          mat4.rotateX(this.mMatrix, this.mMatrix, this.lrotationX);
+	          mat4.rotateY(this.mMatrix, this.mMatrix, this.lrotationY);
+		        mat4.rotateZ(this.mMatrix, this.mMatrix, this.lrotationZ);
+	          mat4.scale(this.mMatrix, this.mMatrix, this.scale);
+
+	          mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
+
         } else {
+		        this.lrotationX += x;
+		        this.lrotationY += y;
+		        this.lrotationZ += z;
+		        console.log('LOCAL: X:', x, 'Y:', y, 'Z:', z);
+
             mat4.translate(this.lcMatrix, this.lcMatrix, position);
             mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
             mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
             mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
             mat4.scale(this.lcMatrix, this.lcMatrix, scale)
-            this.hehe();
+            mat4.identity(this.mMatrix);
+            mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
+
         }
     };
-
-    this.hehe = function(){
-        mat4.identity(this.mMatrix);
-        mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
-    }
 
     this.translate = function (position = this.position) {
         if (this.global){
             console.log('GLOBAL');
             mat4.translate(this.lcMatrix, this.lcMatrix, position);
-            this.hehe();
         } else {
             mat4.translate(this.lcMatrix, this.lcMatrix, position);
-            this.hehe();
         }
-    }
-
-    this.scaleM = function (scale = this.scale) {
-        mat4.scale(this.mMatrix, this.mMatrix, scale);
     }
 
     this.rotateX = function (x) {
         console.log('ROTATION X');
         if (this.global){
             console.log('GLOBAL');
-            this.rotationX += x;
+            // this.rotationX += x;
             mat4.identity(this.mMatrix);
-            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.translate(this.mMatrix, this.mMatrix, this.position);
+	          // mat4.translate(this.mMatrix, this.mMatrix, this.position);
+	          mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
+	          mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
+            // mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationY);
             mat4.scale(this.mMatrix, this.mMatrix, this.scale);
         } else {
             console.log('LOCAL');
-            mat4.identity(this.mMatrix);
-            mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
+            // mat4.identity(this.mMatrix);
+            // ewmat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
             mat4.rotateX(this.mMatrix, this.mMatrix, x);
         }
     }

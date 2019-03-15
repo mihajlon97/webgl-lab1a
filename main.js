@@ -30,15 +30,15 @@
 
 		// Create 9 objects
 		try {
-			objects.push(new Pyramid(gl, [-2, 2, 0]));
-			objects.push(new Pyramid(gl, [0, 2, 0]));
 			objects.push(new Pyramid(gl, [2, 2, 0]));
-			objects.push(new Pyramid(gl, [-2, 0, 0]));
-			objects.push(new Pyramid(gl, [0, 0, 0]));
+			objects.push(new Pyramid(gl, [0, 2, 0]));
+			objects.push(new Pyramid(gl, [-2, 2, 0]));
 			objects.push(new Pyramid(gl, [2, 0, 0]));
-			objects.push(new Pyramid(gl, [-2, -2, 0]));
-			objects.push(new Pyramid(gl, [0, -2, 0]));
+			objects.push(new Pyramid(gl, [0, 0, 0]));
+			objects.push(new Pyramid(gl, [-2, 0, 0]));
 			objects.push(new Pyramid(gl, [2, -2, 0]));
+			objects.push(new Pyramid(gl, [0, -2, 0]));
+			objects.push(new Pyramid(gl, [-2, -2, 0]));
 		} catch (E) {
 			console.log(E);
 		}
