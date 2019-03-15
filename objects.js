@@ -32,7 +32,8 @@ function Pyramid(gl, position = [0, 0, 0]) {
         // 2 triangles make up the ground plane, 4 triangles make up the sides
         const pBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
-        let vertices = [-0.5, 0.0, -0.5,
+        let vertices = [
+        	  -0.5, 0.0, -0.5,
             0.5, 0.0, -0.5,
             0.5, 0.0, 0.5,
 
@@ -60,7 +61,8 @@ function Pyramid(gl, position = [0, 0, 0]) {
         // Create a buffer with the vertex colors
         const cBuffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-        let colors = [255, 255, 255,
+        let colors = [
+        	   255, 255, 255,
             255, 255, 255,
             255, 255, 255,
 
