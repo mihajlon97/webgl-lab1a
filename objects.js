@@ -213,7 +213,6 @@ function Pyramid(gl, position = [0, 0, 0]) {
         this.lcPosition = this.lcPosition.map(function (num, idx) {
             return num + position[idx];
         });
-
         this.scale = this.scale.map(function (num, idx) {
             return num * scale[idx];
         });
@@ -222,25 +221,22 @@ function Pyramid(gl, position = [0, 0, 0]) {
         });
 
         if (this.global) {
-		        this.rotationX += x;
+	          console.log('GLOBAL: X:', x, 'Y:', y, 'Z:', z);
+
+	          this.rotationX += x;
 		        this.rotationY += y;
 		        this.rotationZ += z;
-		        console.log('GLOBAL: X:', x, 'Y:', y, 'Z:', z);
-
             mat4.identity(this.mMatrix);
-
 	          mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
 	          mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
             mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
             mat4.translate(this.mMatrix, this.mMatrix, this.position);
-
             mat4.identity(this.lcMatrix);
 	          mat4.translate(this.mMatrix, this.mMatrix, [0, 0, 0]);
 	          mat4.rotateX(this.mMatrix, this.mMatrix, this.lrotationX);
 	          mat4.rotateY(this.mMatrix, this.mMatrix, this.lrotationY);
 		        mat4.rotateZ(this.mMatrix, this.mMatrix, this.lrotationZ);
 	          mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-
 	          mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
 
         } else {
@@ -248,7 +244,6 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		        this.lrotationY += y;
 		        this.lrotationZ += z;
 		        console.log('LOCAL: X:', x, 'Y:', y, 'Z:', z);
-
             mat4.translate(this.lcMatrix, this.lcMatrix, position);
             mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
             mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
