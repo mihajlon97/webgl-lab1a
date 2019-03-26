@@ -222,23 +222,32 @@ function Sphere(gl, position = [0, 0, 0]) {
 	this.update = function (x, y, z, position = [0, 0, 0], scale = [1, 1, 1]) {
 		// Global transformations
 		if (this.global) {
+			// Move the Object to the center
 			mat4.identity(this.mMatrix);
+			// Transform the object
 			mat4.scale(this.mMatrix, this.mMatrix, scale);
 			mat4.rotateX(this.mMatrix, this.mMatrix, x);
 			mat4.rotateY(this.mMatrix, this.mMatrix, y);
 			mat4.rotateZ(this.mMatrix, this.mMatrix, z);
 			mat4.translate(this.mMatrix, this.mMatrix, position);
+
+			// Multiply with Local Coordinates to get to the right position
 			mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
+
+			// Move Local Coordinates where the object is
 			mat4.identity(this.lcMatrix);
 			mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
 		}
 		// Local transformations
 		else {
+			// Transform Object
 			mat4.translate(this.mMatrix, this.mMatrix, position);
 			mat4.rotateX(this.mMatrix, this.mMatrix, x);
 			mat4.rotateZ(this.mMatrix, this.mMatrix, z);
 			mat4.rotateY(this.mMatrix, this.mMatrix, y);
 			mat4.scale(this.mMatrix, this.mMatrix, scale);
+
+			// Transform Local Coordinates
 			mat4.translate(this.lcMatrix, this.lcMatrix, position);
 			mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
 			mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
