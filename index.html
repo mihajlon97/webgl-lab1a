@@ -1,8 +1,7 @@
-
 <html>
-	<head>
-		<title> LAB1 - Mihajlo Nikodijevic </title>
-		<script id="vertex-shader" type="x-shader/x-vertex">
+<head>
+	<title> LAB1 - Mihajlo Nikodijevic </title>
+	<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec3 vertPosition;
 			attribute vec3 vertColor;
 
@@ -18,39 +17,41 @@
 				gl_Position = pMatrix * vMatrix * mMatrix *  vec4(vertPosition, 1.0);
 				fragColor = vertColor;
 			}
-		</script>
 
-		<script id="fragment-shader" type="x-shader/x-fragment">
+	</script>
+
+	<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
 			varying mediump vec3 fragColor;
 
 			void main() {
 				gl_FragColor = vec4(fragColor, 1.0);
 			}
-		</script>
-		<script>
-		// Credit: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
-		function arraysEqual(arr1, arr2) {
-		    if(arr1.length !== arr2.length)
-		        return false;
-		    for(var i = arr1.length; i--;) {
-		        if(arr1[i] !== arr2[i])
-		            return false;
-		    }
-		    return true;
-		}
-		</script>
-	</head>
 
-	<body onload="Init();">
-		<h1 style="margin-left:230px;"> Nikodijevic Mihajlo GFX Lab1a </h1>
-		<canvas id="webgl-canvas" width="900" height="900"></canvas>
+	</script>
+	<script>
+			// Credit: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
+			function arraysEqual(arr1, arr2) {
+				if (arr1.length !== arr2.length)
+					return false;
+				for (var i = arr1.length; i--;) {
+					if (arr1[i] !== arr2[i])
+						return false;
+				}
+				return true;
+			}
+	</script>
+</head>
 
-		<script src="gl-matrix.js"></script>
-		<script src="initShaders.js"></script>
-		<script src="global.js"></script>
-		<script src="sphere.js"></script>
-		<script src="objects.js"></script>
-		<script src="main.js"></script>
-	</body>
+<body onload="Init();">
+<h1 style="margin-left:230px;"> Nikodijevic Mihajlo GFX Lab1a </h1>
+<canvas id="webgl-canvas" width="900" height="900"></canvas>
+
+<script src="gl-matrix.js"></script>
+<script src="initShaders.js"></script>
+<script src="global.js"></script>
+<script src="sphere.js"></script>
+<script src="objects.js"></script>
+<script src="main.js"></script>
+</body>
 </html>

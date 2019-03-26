@@ -2,318 +2,230 @@
 // Expected parameter, gl instance and object position
 function Pyramid(gl, position = [0, 0, 0]) {
 
-    // Shader program
-    if (Pyramid.shaderProgram === undefined) {
-        Pyramid.shaderProgram = initShaderProgram(gl, "vertex-shader", "fragment-shader");
-        if (Pyramid.shaderProgram === null) {
-            throw new Error('Creating the shader program failed.');
-        }
-        Pyramid.locations = {
-            attribute: {
-                vertPosition: gl.getAttribLocation(Pyramid.shaderProgram, "vertPosition"),
-                vertColor: gl.getAttribLocation(Pyramid.shaderProgram, "vertColor"),
-            },
-            uniform: {
-                mMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrix"),
-                wMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "wMatrix"),
-                vMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "vMatrix"),
-                mMatrixInv: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrixInv"),
-                pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix")
-            }
-        };
-        gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
-        gl.enableVertexAttribArray(Pyramid.locations.attribute.vertColor);
-    }
+	// Shader program
+	if (Pyramid.shaderProgram === undefined) {
+		Pyramid.shaderProgram = initShaderProgram(gl, "vertex-shader", "fragment-shader");
+		if (Pyramid.shaderProgram === null) {
+			throw new Error('Creating the shader program failed.');
+		}
+		Pyramid.locations = {
+			attribute: {
+				vertPosition: gl.getAttribLocation(Pyramid.shaderProgram, "vertPosition"),
+				vertColor: gl.getAttribLocation(Pyramid.shaderProgram, "vertColor"),
+			},
+			uniform: {
+				mMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrix"),
+				wMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "wMatrix"),
+				vMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "vMatrix"),
+				mMatrixInv: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrixInv"),
+				pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix")
+			}
+		};
+		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
+		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertColor);
+	}
 
-    // Buffers
-    if (Pyramid.buffers === undefined) {
-        // Create a buffer with the vertex positions
-        // 3 coordinates per vertex, 3 vertices per triangle
-        // 2 triangles make up the ground plane, 4 triangles make up the sides
-        const pBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
-        let vertices = [
-        	  -0.5, 0.0, -0.5,
-            0.5, 0.0, -0.5,
-            0.5, 0.0, 0.5,
+	// Buffers
+	if (Pyramid.buffers === undefined) {
+		// Create a buffer with the vertex positions
+		// 3 coordinates per vertex, 3 vertices per triangle
+		// 2 triangles make up the ground plane, 4 triangles make up the sides
+		const pBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, pBuffer);
+		let vertices = [
+			-0.5, 0.0, -0.5,
+			0.5, 0.0, -0.5,
+			0.5, 0.0, 0.5,
 
-            -0.5, 0.0, -0.5,
-            0.5, 0.0, 0.5,
-            -0.5, 0.0, 0.5,
+			-0.5, 0.0, -0.5,
+			0.5, 0.0, 0.5,
+			-0.5, 0.0, 0.5,
 
-            -0.5, 0.0, -0.5,
-            0.5, 0.0, -0.5,
-            0.0, 1.0, 0.0,
+			-0.5, 0.0, -0.5,
+			0.5, 0.0, -0.5,
+			0.0, 1.0, 0.0,
 
-            0.5, 0.0, -0.5,
-            0.5, 0.0, 0.5,
-            0.0, 1.0, 0.0,
+			0.5, 0.0, -0.5,
+			0.5, 0.0, 0.5,
+			0.0, 1.0, 0.0,
 
-            0.5, 0.0, 0.5,
-            -0.5, 0.0, 0.5,
-            0.0, 1.0, 0.0,
+			0.5, 0.0, 0.5,
+			-0.5, 0.0, 0.5,
+			0.0, 1.0, 0.0,
 
-            -0.5, 0.0, 0.5,
-            -0.5, 0.0, -0.5,
-            0.0, 1.0, 0.0];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			-0.5, 0.0, 0.5,
+			-0.5, 0.0, -0.5,
+			0.0, 1.0, 0.0];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-        // Create a buffer with the vertex colors
-        const cBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
-        let colors = [
-        	   255, 255, 255,
-            255, 255, 255,
-            255, 255, 255,
+		// Create a buffer with the vertex colors
+		const cBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+		let colors = [
+			255, 255, 255,
+			255, 255, 255,
+			255, 255, 255,
 
-            255, 255, 255,
-            255, 255, 255,
-            255, 255, 255,
+			255, 255, 255,
+			255, 255, 255,
+			255, 255, 255,
 
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
 
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
+			1, 0, 0,
+			1, 0, 0,
+			1, 0, 0,
 
-            0, 0, 1,
-            0, 0, 1,
-            0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
 
-            1, 0, 0,
-            1, 0, 0,
-            1, 0, 0,
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-
-        // Lines
-        const lBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, lBuffer);
-
-        let lineVertices = [
-            0.0, 1.1, 0.0,
-            0.0, -1.1, 0.0,
-
-            1.1, 0.0, 0.0,
-            -1.1, 0.0, 0.0,
-
-            0.0, 0.0, 1.1,
-            0.0, 0.0, -1.1
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineVertices), gl.STATIC_DRAW);
-        lBuffer.itemSize = 3;
-        lBuffer.numItems = 6;
+			1, 0, 0,
+			1, 0, 0,
+			1, 0, 0,
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
 
-        const liBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, liBuffer);
+		// Lines
+		const lBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, lBuffer);
 
-        var lineIndices = [
-            0, 1,
-            2, 3,
-            4, 5
-        ];
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(lineIndices), gl.STATIC_DRAW);
-        liBuffer.itemSize = 1;
-        liBuffer.numItems = 6;
+		let lineVertices = [
+			0.0, 1.1, 0.0,
+			0.0, -1.1, 0.0,
 
-        const lcBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, lcBuffer);
+			1.1, 0.0, 0.0,
+			-1.1, 0.0, 0.0,
 
-        var lineColors = [
-            0.0, 1.0, 0.0, 1.0,
-            0.0, 1.0, 0.0, 1.0,
-
-            1.0, 0.0, 0.0, 1.0,
-            1.0, 0.0, 0.0, 1.0,
-
-            0.0, 0.0, 1.0, 1.0,
-            0.0, 0.0, 1.0, 1.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineColors), gl.STATIC_DRAW);
-        lcBuffer.itemSize = 4;
-        lcBuffer.numItems = 6;
+			0.0, 0.0, 1.1,
+			0.0, 0.0, -1.1
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineVertices), gl.STATIC_DRAW);
+		lBuffer.itemSize = 3;
+		lBuffer.numItems = 6;
 
 
-        Pyramid.buffers = {
-            pBuffer: pBuffer,
-            cBuffer: cBuffer,
-            lBuffer: lBuffer,
-            liBuffer: liBuffer,
-            lcBuffer: lcBuffer,
-            pComponents: 3,
-            cComponents: 3,
-        };
-    }
+		const liBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, liBuffer);
 
-    // Object Variables
-    this.lcPosition = position;
-    this.scale = [1, 1, 1];
-    this.lrotationX = 0;
-    this.rotationX = 0;
-    this.lrotationY = 0;
-    this.rotationY = 0;
-    this.lrotationZ = 0;
-    this.rotationZ = 0;
+		var lineIndices = [
+			0, 1,
+			2, 3,
+			4, 5
+		];
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(lineIndices), gl.STATIC_DRAW);
+		liBuffer.itemSize = 1;
+		liBuffer.numItems = 6;
 
-    this.mMatrix = mat4.create();
-    this.lcMatrix = mat4.create();
-    this.mMatrixTInv = mat3.create();
-    this.selected = false;
-    this.global = false;
+		const lcBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, lcBuffer);
 
-    // Object draw function
-    this.draw = function (gl, pMatrix, vMatrix) {
-        gl.useProgram(Pyramid.shaderProgram);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
-        gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixTInv);
-        gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
+		var lineColors = [
+			0.0, 1.0, 0.0, 1.0,
+			0.0, 1.0, 0.0, 1.0,
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.pBuffer);
-        gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.pComponents, gl.FLOAT, false, 0, 0);
-        gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.cBuffer);
-        gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor,
-        Pyramid.buffers.cComponents, gl.FLOAT, false, 0, 0);
+			1.0, 0.0, 0.0, 1.0,
+			1.0, 0.0, 0.0, 1.0,
 
-        gl.drawArrays(gl.TRIANGLES, 0, 18);
-    };
+			0.0, 0.0, 1.0, 1.0,
+			0.0, 0.0, 1.0, 1.0
+		];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(lineColors), gl.STATIC_DRAW);
+		lcBuffer.itemSize = 4;
+		lcBuffer.numItems = 6;
 
 
-    // Object drawLines function which are displayed as local coordinates in colors R for x, G for y and B for z axis
-    this.drawLines = function (gl, pMatrix) {
-        gl.useProgram(Pyramid.shaderProgram);
+		Pyramid.buffers = {
+			pBuffer: pBuffer,
+			cBuffer: cBuffer,
+			lBuffer: lBuffer,
+			liBuffer: liBuffer,
+			lcBuffer: lcBuffer,
+			pComponents: 3,
+			cComponents: 3,
+		};
+	}
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lBuffer);
-        gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.lBuffer.itemSize, gl.FLOAT, false, 0, 0);
+	// Object Variables
+	this.lcPosition = position;
+	this.scale = [1, 1, 1];
+	this.mMatrix = mat4.create();
+	this.lcMatrix = mat4.create();
+	this.mMatrixTInv = mat3.create();
+	this.selected = false;
+	this.global = false;
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lcBuffer);
-        gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
+	// Object draw function
+	this.draw = function (gl, pMatrix, vMatrix) {
+		gl.useProgram(Pyramid.shaderProgram);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
+		gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixTInv);
+		gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Pyramid.buffers.liBuffer);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
-        gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.lcMatrix);
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.pBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.pComponents, gl.FLOAT, false, 0, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.cBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor,
+			Pyramid.buffers.cComponents, gl.FLOAT, false, 0, 0);
 
-        gl.drawElements(gl.LINES, Pyramid.buffers.liBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-    };
+		gl.drawArrays(gl.TRIANGLES, 0, 18);
+	};
 
-    this.start = function () {
-        this.position = this.lcPosition
-        mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
-        mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
-    };
 
-    this.update = function(x,y,z, position = [0,0,0], scale = [1,1,1]) {
+	// Object drawLines function which are displayed as local coordinates in colors R for x, G for y and B for z axis
+	this.drawLines = function (gl, pMatrix) {
+		gl.useProgram(Pyramid.shaderProgram);
 
-        this.lcPosition = this.lcPosition.map(function (num, idx) {
-            return num + position[idx];
-        });
-        this.scale = this.scale.map(function (num, idx) {
-            return num * scale[idx];
-        });
-        this.position = this.position.map(function (num, idx) {
-            return num + position[idx];
-        });
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.lBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-        if (this.global) {
-	          console.log('GLOBAL: X:', x, 'Y:', y, 'Z:', z);
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lcBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-	          this.rotationX += x;
-		        this.rotationY += y;
-		        this.rotationZ += z;
-            mat4.identity(this.mMatrix);
-	          mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-	          mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
-            mat4.translate(this.mMatrix, this.mMatrix, this.position);
-            mat4.identity(this.lcMatrix);
-	          mat4.translate(this.mMatrix, this.mMatrix, [0, 0, 0]);
-	          mat4.rotateX(this.mMatrix, this.mMatrix, this.lrotationX);
-	          mat4.rotateY(this.mMatrix, this.mMatrix, this.lrotationY);
-		        mat4.rotateZ(this.mMatrix, this.mMatrix, this.lrotationZ);
-	          mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-	          mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Pyramid.buffers.liBuffer);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
+		gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.lcMatrix);
 
-        } else {
-		        this.lrotationX += x;
-		        this.lrotationY += y;
-		        this.lrotationZ += z;
-		        console.log('LOCAL: X:', x, 'Y:', y, 'Z:', z);
-            mat4.translate(this.lcMatrix, this.lcMatrix, position);
-            mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
-            mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
-            mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
-            mat4.scale(this.lcMatrix, this.lcMatrix, scale)
-            mat4.identity(this.mMatrix);
-            mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
+		gl.drawElements(gl.LINES, Pyramid.buffers.liBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+	};
 
-        }
-    };
+	this.start = function () {
+		this.position = this.lcPosition;
+		mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
+		mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
+	};
 
-    this.translate = function (position = this.position) {
-        if (this.global){
-            console.log('GLOBAL');
-            mat4.translate(this.lcMatrix, this.lcMatrix, position);
-        } else {
-            mat4.translate(this.lcMatrix, this.lcMatrix, position);
-        }
-    }
-
-    this.rotateX = function (x) {
-        console.log('ROTATION X');
-        if (this.global){
-            console.log('GLOBAL');
-            // this.rotationX += x;
-            mat4.identity(this.mMatrix);
-	          // mat4.translate(this.mMatrix, this.mMatrix, this.position);
-	          mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-	          mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-            // mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        } else {
-            console.log('LOCAL');
-            // mat4.identity(this.mMatrix);
-            // ewmat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
-            mat4.rotateX(this.mMatrix, this.mMatrix, x);
-        }
-    }
-
-    this.rotateY = function (y) {
-        if (this.global){
-            this.rotationY += y;
-            mat4.identity(this.mMatrix);
-            mat4.translate(this.mMatrix, this.mMatrix, this.position);
-            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        } else {
-            this.rotationY += y;
-            mat4.identity(this.mMatrix);
-            mat4.translate(this.mMatrix, this.mMatrix, this.position);
-            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        }
-    }
-
-    this.rotateZ = function (z) {
-        if (this.global){
-            this.rotationZ += z;
-            mat4.identity(this.mMatrix);
-            mat4.translate(this.mMatrix, this.mMatrix, this.position);
-            mat4.rotateX(this.mMatrix, this.mMatrix, this.rotationX);
-            mat4.rotateY(this.mMatrix, this.mMatrix, this.rotationY);
-            mat4.rotateZ(this.mMatrix, this.mMatrix, this.rotationZ);
-            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        } else {
-            this.rotationZ += z;
-            mat4.rotateZ(this.mMatrix, this.mMatrix, z);
-            mat4.scale(this.mMatrix, this.mMatrix, this.scale);
-        }
-    }
+	this.update = function (x, y, z, position = [0, 0, 0], scale = [1, 1, 1]) {
+		// Global transformations
+		if (this.global) {
+			mat4.identity(this.mMatrix);
+			mat4.scale(this.mMatrix, this.mMatrix, scale);
+			mat4.rotateX(this.mMatrix, this.mMatrix, x);
+			mat4.rotateY(this.mMatrix, this.mMatrix, y);
+			mat4.rotateZ(this.mMatrix, this.mMatrix, z);
+			mat4.translate(this.mMatrix, this.mMatrix, position);
+			mat4.multiply(this.mMatrix, this.mMatrix, this.lcMatrix);
+			mat4.identity(this.lcMatrix);
+			mat4.multiply(this.lcMatrix, this.lcMatrix, this.mMatrix);
+		}
+		// Local transformations
+		else {
+			mat4.translate(this.mMatrix, this.mMatrix, position);
+			mat4.rotateX(this.mMatrix, this.mMatrix, x);
+			mat4.rotateZ(this.mMatrix, this.mMatrix, z);
+			mat4.rotateY(this.mMatrix, this.mMatrix, y);
+			mat4.scale(this.mMatrix, this.mMatrix, scale);
+			mat4.translate(this.lcMatrix, this.lcMatrix, position);
+			mat4.rotateX(this.lcMatrix, this.lcMatrix, x);
+			mat4.rotateZ(this.lcMatrix, this.lcMatrix, z);
+			mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
+			mat4.scale(this.lcMatrix, this.lcMatrix, scale);
+		}
+	};
 }
