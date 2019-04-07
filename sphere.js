@@ -12,6 +12,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 			attribute: {
 				vertPosition: gl.getAttribLocation(Sphere.shaderProgram, "vertPosition"),
 				vertColor: gl.getAttribLocation(Sphere.shaderProgram, "vertColor"),
+				aNormal: gl.getAttribLocation(Sphere.shaderProgram, "aNormal"),
 			},
 			uniform: {
 				mMatrix: gl.getUniformLocation(Sphere.shaderProgram, "mMatrix"),
@@ -23,6 +24,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 		};
 		gl.enableVertexAttribArray(Sphere.locations.attribute.vertPosition);
 		gl.enableVertexAttribArray(Sphere.locations.attribute.vertColor);
+		gl.enableVertexAttribArray(Sphere.locations.attribute.aNormal);
 	}
 
 	// Buffers
@@ -41,6 +43,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 		let p1, p2;
 
 		let vertices = [];
+		let normals = [];
 		for (let j = 0; j <= limit; j++) {
 			hj = j * Math.PI / limit;
 			sj = Math.sin(hj);
@@ -51,9 +54,13 @@ function Sphere(gl, position = [0, 0, 0]) {
 				ci = Math.cos(hi);
 
 				// 0.77 to minimize the sphere
-				vertices.push(si * sj * 0.77);  // X
+				vertices.push(ci * sj * 0.77);  // X
 				vertices.push(cj * 0.77);       // Y
-				vertices.push(ci * sj * 0.77);  // Z
+				vertices.push(si * sj * 0.77);  // Z
+
+				normals.push(ci*sj);
+				normals.push(cj);
+				normals.push(si*sj);
 			}
 		}
 
@@ -152,15 +159,23 @@ function Sphere(gl, position = [0, 0, 0]) {
 		lcBuffer.numItems = 6;
 
 
+		//Create a buffer with the normals
+		const nBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+
+
 		Sphere.buffers = {
 			pBuffer: pBuffer,
 			cBuffer: cBuffer,
+			nBuffer: nBuffer,
 			lBuffer: lBuffer,
 			iBuffer: iBuffer,
 			liBuffer: liBuffer,
 			lcBuffer: lcBuffer,
 			pComponents: 3,
 			cComponents: 3,
+			nComponents: 3,
 		};
 	}
 
@@ -170,7 +185,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 
 	this.mMatrix = mat4.create();
 	this.lcMatrix = mat4.create();
-	this.mMatrixTInv = mat3.create();
+	this.mMatrixInv = mat3.create();
 	this.selected = false;
 	this.global = false;
 
@@ -181,19 +196,20 @@ function Sphere(gl, position = [0, 0, 0]) {
 		gl.uniformMatrix4fv(Sphere.locations.uniform.mMatrix, false, this.mMatrix);
 		gl.uniformMatrix4fv(Sphere.locations.uniform.wMatrix, false, wMatrix);
 		gl.uniformMatrix4fv(Sphere.locations.uniform.vMatrix, false, vMatrix);
-		gl.uniformMatrix3fv(Sphere.locations.uniform.mMatrixInv, false, this.mMatrixTInv);
+		gl.uniformMatrix3fv(Sphere.locations.uniform.mMatrixInv, false, this.mMatrixInv);
 		gl.uniform4fv(Sphere.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.pBuffer);
 		gl.vertexAttribPointer(Sphere.locations.attribute.vertPosition, Sphere.buffers.pComponents, gl.FLOAT, false, 0, 0);
 		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.cBuffer);
-		gl.vertexAttribPointer(Sphere.locations.attribute.vertColor,
-			Sphere.buffers.cComponents, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(Sphere.locations.attribute.vertColor, Sphere.buffers.cComponents, gl.FLOAT, false, 0, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.nBuffer);
+		gl.vertexAttribPointer(Sphere.locations.attribute.aNormal, Sphere.buffers.nComponents, gl.FLOAT, false, 0, 0);
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Sphere.buffers.iBuffer);
+		gl.drawElements(gl.TRIANGLES, Sphere.buffers.iBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
 		gl.drawArrays(gl.TRIANGLES, 0, 18);
-		gl.drawElements(gl.TRIANGLES, Sphere.buffers.iBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 	};
 
 
@@ -206,6 +222,10 @@ function Sphere(gl, position = [0, 0, 0]) {
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.lcBuffer);
 		gl.vertexAttribPointer(Sphere.locations.attribute.vertColor, Sphere.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.nBuffer);
+		gl.vertexAttribPointer(Sphere.locations.attribute.aNormal, Sphere.buffers.nComponents, gl.FLOAT, false, 0, 0);
+
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Sphere.buffers.liBuffer);
 		gl.uniformMatrix4fv(Sphere.locations.uniform.pMatrix, false, pMatrix);
@@ -254,5 +274,6 @@ function Sphere(gl, position = [0, 0, 0]) {
 			mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
 			mat4.scale(this.lcMatrix, this.lcMatrix, scale);
 		}
+		mat3.normalFromMat4(this.mMatrixInv, this.mMatrix);
 	};
 }

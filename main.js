@@ -85,7 +85,7 @@ var Init = function () {
 		}
 
 		// If no object selected, exit
-		if (objects['selected'] === null || objects['selected'] === undefined || objects['selected'].lenght == 0) return;
+		if (objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length == 0) return;
 
 		// Handle event.key inputs
 		switch (event.key) {

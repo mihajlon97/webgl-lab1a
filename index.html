@@ -5,6 +5,7 @@
 	<script id="vertex-shader" type="x-shader/x-vertex">
 			attribute vec3 vertPosition;
 			attribute vec3 vertColor;
+			attribute vec3 aNormal;
 
 			uniform mat4 pMatrix;
 			uniform mat4 vMatrix;
@@ -13,10 +14,12 @@
 			uniform mat3 mMatrixInv;
 
 			varying mediump vec3 fragColor;
+			varying mediump vec3 vertNormal;
 
 			void main() {
 				gl_Position = pMatrix * vMatrix * mMatrix *  vec4(vertPosition, 1.0);
 				fragColor = vertColor;
+				vertNormal = mat3(mMatrixInv) * aNormal;
 			}
 
 	</script>
@@ -24,9 +27,13 @@
 	<script id="fragment-shader" type="x-shader/x-fragment">
 			precision mediump float;
 			varying mediump vec3 fragColor;
+            varying mediump vec3 vertNormal;
 
 			void main() {
-				gl_FragColor = vec4(fragColor, 1.0);
+				const mediump vec3 lightDir = vec3(-1.0, -1.0, -1.0);
+                mediump float intensity = max(0.0, -dot(normalize(vertNormal), lightDir));
+
+				gl_FragColor = vec4(fragColor * intensity + fragColor * 0.1, 1.0);
 			}
 
 	</script>

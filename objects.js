@@ -12,6 +12,7 @@ function Pyramid(gl, position = [0, 0, 0]) {
 			attribute: {
 				vertPosition: gl.getAttribLocation(Pyramid.shaderProgram, "vertPosition"),
 				vertColor: gl.getAttribLocation(Pyramid.shaderProgram, "vertColor"),
+				aNormal: gl.getAttribLocation(Pyramid.shaderProgram, "aNormal")
 			},
 			uniform: {
 				mMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrix"),
@@ -23,6 +24,7 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		};
 		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
 		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertColor);
+		gl.enableVertexAttribArray(Pyramid.locations.attribute.aNormal);
 	}
 
 	// Buffers
@@ -138,14 +140,49 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		lcBuffer.numItems = 6;
 
 
+		//Create a buffer with the normals
+		const nBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, nBuffer);
+		const norm = Math.sqrt(5)/2;
+		let normals = [
+			0, -1, 0,
+			0, -1, 0,
+			0, -1, 0,
+
+			0, -1, 0,
+			0, -1, 0,
+			0, -1, 0,
+
+			0, 0.5/norm, -1/norm,
+			0, 0.5/norm, -1/norm,
+			0, 0.5/norm, -1/norm,
+
+			1/norm, 0.5/norm, 0,
+			1/norm, 0.5/norm, 0,
+			1/norm, 0.5/norm, 0,
+
+			0, 0.5/norm, 1/norm,
+			0, 0.5/norm, 1/norm,
+			0, 0.5/norm, 1/norm,
+
+			-1/norm, 0.5/norm, 0,
+			-1/norm, 0.5/norm, 0,
+			-1/norm, 0.5/norm, 0];
+
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+
+
+
 		Pyramid.buffers = {
 			pBuffer: pBuffer,
 			cBuffer: cBuffer,
 			lBuffer: lBuffer,
 			liBuffer: liBuffer,
 			lcBuffer: lcBuffer,
+			nBuffer: nBuffer,
 			pComponents: 3,
 			cComponents: 3,
+			nComponents: 3,
 		};
 	}
 
@@ -154,7 +191,7 @@ function Pyramid(gl, position = [0, 0, 0]) {
 	this.scale = [1, 1, 1];
 	this.mMatrix = mat4.create();
 	this.lcMatrix = mat4.create();
-	this.mMatrixTInv = mat3.create();
+	this.mMatrixInv = mat3.create();
 	this.selected = false;
 	this.global = false;
 
@@ -165,14 +202,15 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.mMatrix);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
-		gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixTInv);
+		gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixInv);
 		gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.pBuffer);
 		gl.vertexAttribPointer(Pyramid.locations.attribute.vertPosition, Pyramid.buffers.pComponents, gl.FLOAT, false, 0, 0);
 		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.cBuffer);
-		gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor,
-			Pyramid.buffers.cComponents, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.cComponents, gl.FLOAT, false, 0, 0);
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.nBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.aNormal, Pyramid.buffers.nComponents, gl.FLOAT, false, 0, 0);
 
 		gl.drawArrays(gl.TRIANGLES, 0, 18);
 	};
@@ -188,6 +226,10 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.lcBuffer);
 		gl.vertexAttribPointer(Pyramid.locations.attribute.vertColor, Pyramid.buffers.lcBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.nBuffer);
+		gl.vertexAttribPointer(Pyramid.locations.attribute.aNormal, Pyramid.buffers.nComponents, gl.FLOAT, false, 0, 0);
+
+
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Pyramid.buffers.liBuffer);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.pMatrix, false, pMatrix);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.mMatrix, false, this.lcMatrix);
@@ -196,7 +238,6 @@ function Pyramid(gl, position = [0, 0, 0]) {
 	};
 
 	this.start = function () {
-		this.position = this.lcPosition;
 		mat4.translate(this.mMatrix, this.mMatrix, this.lcPosition);
 		mat4.translate(this.lcMatrix, this.lcMatrix, this.lcPosition);
 	};
@@ -236,5 +277,6 @@ function Pyramid(gl, position = [0, 0, 0]) {
 			mat4.rotateY(this.lcMatrix, this.lcMatrix, y);
 			mat4.scale(this.lcMatrix, this.lcMatrix, scale);
 		}
+		mat3.normalFromMat4(this.mMatrixInv, this.mMatrix);
 	};
 }
