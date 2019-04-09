@@ -12,14 +12,15 @@ function Pyramid(gl, position = [0, 0, 0]) {
 			attribute: {
 				vertPosition: gl.getAttribLocation(Pyramid.shaderProgram, "vertPosition"),
 				vertColor: gl.getAttribLocation(Pyramid.shaderProgram, "vertColor"),
-				aNormal: gl.getAttribLocation(Pyramid.shaderProgram, "aNormal")
+				aNormal: gl.getAttribLocation(Pyramid.shaderProgram, "aNormal"),
 			},
 			uniform: {
 				mMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrix"),
 				wMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "wMatrix"),
 				vMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "vMatrix"),
 				mMatrixInv: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrixInv"),
-				pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix")
+				pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix"),
+				aLight: gl.getUniformLocation(Pyramid.shaderProgram, "aLight")
 			}
 		};
 		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
@@ -171,7 +172,10 @@ function Pyramid(gl, position = [0, 0, 0]) {
 
 		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 
-
+		const lightBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, lightBuffer);
+		let light = [-1,-1,-1];
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(light), gl.STATIC_DRAW);
 
 		Pyramid.buffers = {
 			pBuffer: pBuffer,
@@ -180,9 +184,11 @@ function Pyramid(gl, position = [0, 0, 0]) {
 			liBuffer: liBuffer,
 			lcBuffer: lcBuffer,
 			nBuffer: nBuffer,
+			lightBuffer: lightBuffer,
 			pComponents: 3,
 			cComponents: 3,
 			nComponents: 3,
+			lightComponents: 3,
 		};
 	}
 
@@ -203,6 +209,7 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
 		gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixInv);
+		gl.uniform3fv(Pyramid.locations.uniform.aLight, [-1.0, -1.0, -1.0]);
 		gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.pBuffer);

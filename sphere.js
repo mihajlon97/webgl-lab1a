@@ -19,7 +19,8 @@ function Sphere(gl, position = [0, 0, 0]) {
 				wMatrix: gl.getUniformLocation(Sphere.shaderProgram, "wMatrix"),
 				vMatrix: gl.getUniformLocation(Sphere.shaderProgram, "vMatrix"),
 				mMatrixInv: gl.getUniformLocation(Sphere.shaderProgram, "mMatrixInv"),
-				pMatrix: gl.getUniformLocation(Sphere.shaderProgram, "pMatrix")
+				pMatrix: gl.getUniformLocation(Sphere.shaderProgram, "pMatrix"),
+				aLight: gl.getUniformLocation(Sphere.shaderProgram, "aLight")
 			}
 		};
 		gl.enableVertexAttribArray(Sphere.locations.attribute.vertPosition);
@@ -197,6 +198,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 		gl.uniformMatrix4fv(Sphere.locations.uniform.wMatrix, false, wMatrix);
 		gl.uniformMatrix4fv(Sphere.locations.uniform.vMatrix, false, vMatrix);
 		gl.uniformMatrix3fv(Sphere.locations.uniform.mMatrixInv, false, this.mMatrixInv);
+		gl.uniform3fv(Sphere.locations.uniform.aLight, lightDir);
 		gl.uniform4fv(Sphere.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.pBuffer);

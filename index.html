@@ -12,14 +12,17 @@
 			uniform mat4 wMatrix;
 			uniform mat4 mMatrix;
 			uniform mat3 mMatrixInv;
+			uniform vec3 aLight;
 
 			varying mediump vec3 fragColor;
 			varying mediump vec3 vertNormal;
+			varying mediump vec3 lightDir;
 
 			void main() {
 				gl_Position = pMatrix * vMatrix * mMatrix *  vec4(vertPosition, 1.0);
 				fragColor = vertColor;
 				vertNormal = mat3(mMatrixInv) * aNormal;
+				lightDir = aLight;
 			}
 
 	</script>
@@ -28,9 +31,9 @@
 			precision mediump float;
 			varying mediump vec3 fragColor;
             varying mediump vec3 vertNormal;
+            varying mediump vec3 lightDir;
 
 			void main() {
-				const mediump vec3 lightDir = vec3(-1.0, -1.0, -1.0);
                 mediump float intensity = max(0.0, -dot(normalize(vertNormal), lightDir));
 
 				gl_FragColor = vec4(fragColor * intensity + fragColor * 0.1, 1.0);
@@ -40,7 +43,7 @@
 </head>
 
 <body onload="Init();">
-<h1 style="margin-left:230px;"> Nikodijevic Mihajlo GFX Lab1a </h1>
+<h1 style="margin-left:230px;"> Nikodijevic Mihajlo GFX Lab1a/Lab1b </h1>
 <canvas id="webgl-canvas" width="900" height="900"></canvas>
 
 <script src="gl-matrix.js"></script>

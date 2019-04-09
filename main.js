@@ -1,7 +1,8 @@
 // Global Variables, first object empty, because selection starts with 1
 var objects = [{}], canvas, gl, program, flag = false;
 var wMatrix = mat4.create();
-
+var lightDir = [-1.0, -1.0, -1.0];
+var lightSelected = false;
 // Init function called onload body event
 var Init = function () {
 	canvas = document.getElementById('webgl-canvas');
@@ -30,15 +31,15 @@ var Init = function () {
 
 	// Create 9 objects
 	try {
-		objects.push(new Pyramid(gl, [2, 2, 0]));
-		objects.push(new Pyramid(gl, [0, 2, 0]));
-		objects.push(new Pyramid(gl, [-2, 2, 0]));
-		objects.push(new Pyramid(gl, [2, 0, 0]));
+		objects.push(new Sphere(gl, [2, 2, 0]));
+		objects.push(new Sphere(gl, [0, 2, 0]));
+		objects.push(new Sphere(gl, [-2, 2, 0]));
+		//objects.push(new Pyramid(gl, [2, 0, 0]));
 		objects.push(new Sphere(gl, [0, 0, 0]));
-		objects.push(new Pyramid(gl, [-2, 0, 0]));
-		objects.push(new Pyramid(gl, [2, -2, 0]));
-		objects.push(new Pyramid(gl, [0, -2, 0]));
-		objects.push(new Pyramid(gl, [-2, -2, 0]));
+		//objects.push(new Pyramid(gl, [-2, 0, 0]));
+		objects.push(new Sphere(gl, [2, -2, 0]));
+		objects.push(new Sphere(gl, [0, -2, 0]));
+		objects.push(new Sphere(gl, [-2, -2, 0]));
 		objects.push(new Global(gl, [0, 0, 0]));
 	} catch (E) {
 		console.log(E);
@@ -82,83 +83,100 @@ var Init = function () {
 					}
 				}
 			});
+		} else {
+			if (event.key === 'l' || event.key === 'L') {
+				console.log("Toggle light");
+				lightSelected = !lightSelected;
+			}
 		}
 
 		// If no object selected, exit
-		if (objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length == 0) return;
+		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length == 0) && !lightSelected) return;
 
 		// Handle event.key inputs
 		switch (event.key) {
 			case "w" : {
-				objects['selected'].map(e => e.update(0.1, 0, 0));
+				if(!lightSelected) objects['selected'].map(e => e.update(0.1, 0, 0));
 				break;
 			}
 			case "s" : {
-				objects['selected'].map(e => e.update(-0.1, 0, 0));
+				if(!lightSelected) objects['selected'].map(e => e.update(-0.1, 0, 0));
 				break;
 			}
 			case "e" : {
-				objects['selected'].map(e => e.update(0, 0.1, 0));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0.1, 0));
 				break;
 			}
 			case "q" : {
-				objects['selected'].map(e => e.update(0, -0.1, 0));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, -0.1, 0));
 				break;
 			}
 			case "d" : {
-				objects['selected'].map(e => e.update(0, 0, 0.1));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0.1));
 				break;
 			}
 			case "a" : {
-				objects['selected'].map(e => e.update(0, 0, -0.1));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, -0.1));
 				break;
 			}
 			case "ArrowDown" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, -0.03, 0]));
+				if (lightSelected) {
+					lightDir[1] += 0.1;
+					console.log(lightDir);
+				}
+				else objects['selected'].map(e => e.update(0, 0, 0, [0, -0.03, 0]));
 				break;
 			}
 			case "ArrowUp" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0.03, 0]));
+				if (lightSelected) {
+					lightDir[1] -= 0.1;
+					console.log(lightDir);
+				}
+				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0.03, 0]));
 				break;
 			}
 			case "ArrowLeft" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0.03, 0, 0]));
+				if (lightSelected) lightDir[0] += 0.1;
+				else objects['selected'].map(e => e.update(0, 0, 0, [0.03, 0, 0]));
 				break;
 			}
 			case "ArrowRight" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [-0.03, 0, 0]));
+				if (lightSelected) lightDir[0] -= 0.1;
+				else objects['selected'].map(e => e.update(0, 0, 0, [-0.03, 0, 0]));
 				break;
 			}
 			case "," : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0.03]));
+				if (lightSelected) lightDir[2] += 0.1;
+				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0.03]));
 				break;
 			}
 			case "." : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, -0.03]));
+				if (lightSelected) lightDir[0] -= 0.1;
+				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0, -0.03]));
 				break;
 			}
 			case "x" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [0.9, 1, 1]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [0.9, 1, 1]));
 				break;
 			}
 			case "y" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 0.9, 1]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 0.9, 1]));
 				break;
 			}
 			case "z" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 0.9]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 0.9]));
 				break;
 			}
 			case "X" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1.1, 1, 1]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1.1, 1, 1]));
 				break;
 			}
 			case "Y" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1.1, 1]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1.1, 1]));
 				break;
 			}
 			case "Z" : {
-				objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 1.1]));
+				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 1.1]));
 				break;
 			}
 		}
