@@ -12,17 +12,25 @@
 			uniform mat4 wMatrix;
 			uniform mat4 mMatrix;
 			uniform mat3 mMatrixInv;
-			uniform vec3 aLight;
+			uniform vec3 pLight;
 
 			varying mediump vec3 fragColor;
 			varying mediump vec3 vertNormal;
-			varying mediump vec3 lightDir;
+			varying mediump vec3 light;
+			varying mediump vec3 vertPos;
+			varying mediump float specularEnabled;
 
 			void main() {
-				gl_Position = pMatrix * vMatrix * mMatrix *  vec4(vertPosition, 1.0);
+				// Position, color and normal
+				gl_Position = pMatrix * vMatrix * mMatrix * vec4(vertPosition, 1.0);
 				fragColor = vertColor;
-				vertNormal = mat3(mMatrixInv) * aNormal;
-				lightDir = aLight;
+				vertNormal = normalize(mat3(mMatrixInv) * aNormal);
+
+				// Calculate world coordinate of vertex - for specular
+                vertPos = vec3(gl_Position);
+
+				// Point light
+				light = normalize(vec3(pLight - vertPos));
 			}
 
 	</script>
@@ -31,12 +39,26 @@
 			precision mediump float;
 			varying mediump vec3 fragColor;
             varying mediump vec3 vertNormal;
-            varying mediump vec3 lightDir;
+            varying mediump vec3 light;
+            varying mediump vec3 vertPos;
+			uniform float specularEnabled;
+			uniform vec3 camera;
 
 			void main() {
-                mediump float intensity = max(0.0, -dot(normalize(vertNormal), lightDir));
+				vec3 ambientIntensity = vec3(0.15, 0.15, 0.15);
+				float nDotL = max(-dot(light, vertNormal), 0.0);
 
-				gl_FragColor = vec4(fragColor * intensity + fragColor * 0.1, 1.0);
+                // Switch specular light
+				if (specularEnabled > 0.0) {
+					vec3 cameraDir = normalize(camera - vertPos);
+					vec3 hVector = normalize(cameraDir + light);
+					float specularPower = 0.5;
+					float specularShininess = 50.0;
+					float specularBrightness = (specularPower * pow(max(0.0, dot(vertNormal, hVector)), specularShininess));
+					gl_FragColor = vec4((fragColor * nDotL + vec3(1.0, 1.0, 1.0) * specularBrightness + fragColor * ambientIntensity), 1.0);
+				} else {
+					gl_FragColor = vec4(fragColor * nDotL + fragColor * ambientIntensity, 1.0);
+				}
 			}
 
 	</script>

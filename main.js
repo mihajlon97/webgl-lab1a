@@ -1,8 +1,9 @@
 // Global Variables, first object empty, because selection starts with 1
 var objects = [{}], canvas, gl, program, flag = false;
 var wMatrix = mat4.create();
-var lightDir = [-1.0, -1.0, -1.0];
+var lightPosition = [0.0, 10.0, 0.0];
 var lightSelected = false;
+var specularEnabled = 0.0;
 // Init function called onload body event
 var Init = function () {
 	canvas = document.getElementById('webgl-canvas');
@@ -75,83 +76,83 @@ var Init = function () {
 			objects['selected'] = [];
 			objects.forEach((e, i) => {
 				e.selected = false;
-				if (event.key == '0' || i == event.key) {
-					if (i != 0) {
+				if (event.key === '0' || i === event.key) {
+					if (i !== 0) {
 						objects['selected'].push(e);
-						e.global = (event.key == '0');
+						e.global = (event.key === '0');
 						e.selected = true;
 					}
 				}
 			});
 		} else {
 			if (event.key === 'l' || event.key === 'L') {
-				console.log("Toggle light");
+				console.log("Light transformations");
 				lightSelected = !lightSelected;
 			}
 		}
 
 		// If no object selected, exit
-		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length == 0) && !lightSelected) return;
+		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length === 0) && !lightSelected && event.key !== 'p' && event.key !== 'o') return;
 
 		// Handle event.key inputs
 		switch (event.key) {
 			case "w" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0.1, 0, 0));
+				else vec3.rotateX(lightPosition, lightPosition, [0,0,0], 0.1);
 				break;
 			}
 			case "s" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(-0.1, 0, 0));
+				else vec3.rotateX(lightPosition, lightPosition, [0,0,0], -0.1);
 				break;
 			}
 			case "e" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, 0.1, 0));
+				else vec3.rotateY(lightPosition, lightPosition, [0,0,0], 0.1);
 				break;
 			}
 			case "q" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, -0.1, 0));
+				else vec3.rotateY(lightPosition, lightPosition, [0,0,0], -0.1);
 				break;
 			}
 			case "d" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0.1));
+				else vec3.rotateZ(lightPosition, lightPosition, [0,0,0], 0.1);
 				break;
 			}
 			case "a" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, -0.1));
+				else vec3.rotateZ(lightPosition, lightPosition, [0,0,0], -0.1);
 				break;
 			}
 			case "ArrowDown" : {
-				if (lightSelected) {
-					lightDir[1] += 0.1;
-					console.log(lightDir);
-				}
+				if (lightSelected) lightPosition[1] += 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [0, -0.03, 0]));
 				break;
 			}
 			case "ArrowUp" : {
-				if (lightSelected) {
-					lightDir[1] -= 0.1;
-					console.log(lightDir);
-				}
+				if (lightSelected) lightPosition[1] -= 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0.03, 0]));
 				break;
 			}
 			case "ArrowLeft" : {
-				if (lightSelected) lightDir[0] += 0.1;
+				if (lightSelected) lightPosition[0] += 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [0.03, 0, 0]));
 				break;
 			}
 			case "ArrowRight" : {
-				if (lightSelected) lightDir[0] -= 0.1;
+				if (lightSelected) lightPosition[0] -= 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [-0.03, 0, 0]));
 				break;
 			}
 			case "," : {
-				if (lightSelected) lightDir[2] += 0.1;
+				if (lightSelected) lightPosition[2] += 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0.03]));
 				break;
 			}
 			case "." : {
-				if (lightSelected) lightDir[0] -= 0.1;
+				if (lightSelected) lightPosition[2] -= 0.3;
 				else objects['selected'].map(e => e.update(0, 0, 0, [0, 0, -0.03]));
 				break;
 			}
@@ -177,6 +178,14 @@ var Init = function () {
 			}
 			case "Z" : {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 1.1]));
+				break;
+			}
+			case "p" : {
+				specularEnabled = specularEnabled = 1.0;
+				break;
+			}
+			case "o" : {
+				specularEnabled = specularEnabled = 0.0;
 				break;
 			}
 		}
