@@ -20,7 +20,10 @@ function Pyramid(gl, position = [0, 0, 0]) {
 				vMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "vMatrix"),
 				mMatrixInv: gl.getUniformLocation(Pyramid.shaderProgram, "mMatrixInv"),
 				pMatrix: gl.getUniformLocation(Pyramid.shaderProgram, "pMatrix"),
-				camera: gl.getUniformLocation(Pyramid.shaderProgram, "camera")
+				pLight: gl.getUniformLocation(Pyramid.shaderProgram, "pLight"),
+				camera: gl.getUniformLocation(Pyramid.shaderProgram, "camera"),
+				specularEnabled: gl.getUniformLocation(Pyramid.shaderProgram, "specularEnabled"),
+				phong: gl.getUniformLocation(Pyramid.shaderProgram, "phong")
 			}
 		};
 		gl.enableVertexAttribArray(Pyramid.locations.attribute.vertPosition);
@@ -209,7 +212,10 @@ function Pyramid(gl, position = [0, 0, 0]) {
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.wMatrix, false, wMatrix);
 		gl.uniformMatrix4fv(Pyramid.locations.uniform.vMatrix, false, vMatrix);
 		gl.uniformMatrix3fv(Pyramid.locations.uniform.mMatrixInv, false, this.mMatrixInv);
+		gl.uniform3fv(Pyramid.locations.uniform.pLight, lightPosition);
 		gl.uniform3fv(Pyramid.locations.uniform.camera, [0, -10, 0]);
+		gl.uniform1f(Pyramid.locations.uniform.specularEnabled, specularEnabled);
+		gl.uniform1f(Pyramid.locations.uniform.phong, phong);
 		gl.uniform4fv(Pyramid.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Pyramid.buffers.pBuffer);

@@ -36,9 +36,9 @@ var Init = function () {
 		objects.push(new Sphere(gl, [2, 2, 0]));
 		objects.push(new Sphere(gl, [0, 2, 0]));
 		objects.push(new Sphere(gl, [-2, 2, 0]));
-		//objects.push(new Pyramid(gl, [2, 0, 0]));
+		objects.push(new Pyramid(gl, [2, 0, 0]));
 		objects.push(new Sphere(gl, [0, 0, 0]));
-		//objects.push(new Pyramid(gl, [-2, 0, 0]));
+		objects.push(new Pyramid(gl, [-2, 0, 0]));
 		objects.push(new Sphere(gl, [2, -2, 0]));
 		objects.push(new Sphere(gl, [0, -2, 0]));
 		objects.push(new Sphere(gl, [-2, -2, 0]));
@@ -77,7 +77,7 @@ var Init = function () {
 			objects['selected'] = [];
 			objects.forEach((e, i) => {
 				e.selected = false;
-				if (event.key === '0' || i === event.key) {
+				if (event.key == '0' || i == event.key) {
 					if (i !== 0) {
 						objects['selected'].push(e);
 						e.global = (event.key === '0');
@@ -93,7 +93,10 @@ var Init = function () {
 		}
 
 		// If no object selected, exit
-		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length === 0) && !lightSelected && event.key !== 'p' && event.key !== 'o' && event.key !== 'i' && event.key !== 'u') return;
+		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length === 0) && !lightSelected && event.key !== 'p' && event.key !== 'o' && event.key !== 'i' && event.key !== 'u'){
+			console.log("return", objects['selected']);
+			return;
+		}
 
 		// Handle event.key inputs
 		switch (event.key) {
