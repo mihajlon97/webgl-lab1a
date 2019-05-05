@@ -4,6 +4,7 @@ var wMatrix = mat4.create();
 var lightPosition = [0.0, 10.0, 0.0];
 var lightSelected = false;
 var specularEnabled = 0.0;
+var phong = 1.0;
 // Init function called onload body event
 var Init = function () {
 	canvas = document.getElementById('webgl-canvas');
@@ -92,7 +93,7 @@ var Init = function () {
 		}
 
 		// If no object selected, exit
-		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length === 0) && !lightSelected && event.key !== 'p' && event.key !== 'o') return;
+		if ((objects['selected'] === null || objects['selected'] === undefined || objects['selected'].length === 0) && !lightSelected && event.key !== 'p' && event.key !== 'o' && event.key !== 'i' && event.key !== 'u') return;
 
 		// Handle event.key inputs
 		switch (event.key) {
@@ -180,12 +181,24 @@ var Init = function () {
 				if(!lightSelected) objects['selected'].map(e => e.update(0, 0, 0, [0, 0, 0], [1, 1, 1.1]));
 				break;
 			}
+			case "u" : {
+				phong = 0.0;
+				specularEnabled = 0.0;
+				break;
+			}
+			case "i" : {
+				phong = 0.0;
+				specularEnabled = 1.0;
+				break;
+			}
 			case "p" : {
-				specularEnabled = specularEnabled = 1.0;
+				phong = 1.0;
+				specularEnabled = 1.0;
 				break;
 			}
 			case "o" : {
-				specularEnabled = specularEnabled = 0.0;
+				phong = 1.0;
+				specularEnabled = 0.0;
 				break;
 			}
 		}

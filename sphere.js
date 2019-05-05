@@ -22,7 +22,8 @@ function Sphere(gl, position = [0, 0, 0]) {
 				pMatrix: gl.getUniformLocation(Sphere.shaderProgram, "pMatrix"),
 				pLight: gl.getUniformLocation(Sphere.shaderProgram, "pLight"),
 				camera: gl.getUniformLocation(Sphere.shaderProgram, "camera"),
-				specularEnabled: gl.getUniformLocation(Sphere.shaderProgram, "specularEnabled")
+				specularEnabled: gl.getUniformLocation(Sphere.shaderProgram, "specularEnabled"),
+				phong: gl.getUniformLocation(Sphere.shaderProgram, "phong")
 			}
 		};
 		gl.enableVertexAttribArray(Sphere.locations.attribute.vertPosition);
@@ -40,7 +41,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 
 
 		// Position vertices
-		let limit = 50;
+		let limit = 33;
 		let i, hi, si, ci;
 		let j, hj, sj, cj;
 		let p1, p2;
@@ -203,6 +204,7 @@ function Sphere(gl, position = [0, 0, 0]) {
 		gl.uniform3fv(Sphere.locations.uniform.pLight, lightPosition);
 		gl.uniform3fv(Sphere.locations.uniform.camera, [0, -10, 0]);
 		gl.uniform1f(Sphere.locations.uniform.specularEnabled, specularEnabled);
+		gl.uniform1f(Sphere.locations.uniform.phong, phong);
 		gl.uniform4fv(Sphere.locations.uniform.uColor, [1.0, 0.0, 0.0, 1.0]);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, Sphere.buffers.pBuffer);
